@@ -1,0 +1,55 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Backup files
+*.backup
+*.bak
+*-backup.js
+registry-backup.js
+
+# Test files
+test-*.html
+test-*.js
+
+# Scripts that were used for generation/fixing
+add-method.js
+fix-registry-export.js
+check-implementation-status.js
+cleanup-to-501.js
+enhance-remaining-utilities.js
+generate-*.js
+implement-*.js
+verify-501.js
+create-favicon.html

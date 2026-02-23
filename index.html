@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>726 Tools - Delightful Utilities for Everything</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo" data-route="home">501 Tools</a>
+                <nav class="nav" role="navigation">
+                    <button class="btn btn-ghost" data-route="about">About</button>
+                    <button class="btn btn-ghost" data-route="settings">Settings</button>
+                    <button class="btn btn-ghost" data-route="data">Data</button>
+                    <button class="btn btn-ghost" data-route="system">System</button>
+                    <button class="btn btn-primary" id="surprise-btn">Surprise Me!</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main id="main" class="container">
+        <div id="app"></div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h4>Privacy First</h4>
+                    <p>All processing happens in your browser. No data leaves your device.</p>
+                </div>
+                <div>
+                    <h4>Works Offline</h4>
+                    <p>Once loaded, all 501 tools work without internet.</p>
+                </div>
+                <div>
+                    <h4>Your Data</h4>
+                    <p>Export, import, or erase your data anytime.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+    <div class="modal" id="modal"></div>
+
+    <script type="module">
+        import { App } from './js/app.js';
+        import { UtilityRegistry } from './js/registry.js';
+
+        // Initialize the application
+        window.addEventListener('DOMContentLoaded', async () => {
+            // UtilityRegistry is already loaded from registry.js
+            // No init needed - it's a static object
+
+            // Start the app
+            App.init();
+
+            // Make App available globally for inline handlers
+            window.App = App;
+        });
+    </script>
+</body>
+</html>
