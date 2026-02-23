@@ -1,111 +1,26 @@
-export const StrategicThinker = {
-    id: 'strategic-thinker',
-    name: 'Strategic Thinker',
-    description: 'Develop long-term strategic thinking',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Main functionality
-    execute(params = {}) {
-        return {
-            success: true,
-            data: this.processData(params),
-            category: 'thinking-&-planning',
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement category-specific functionality
-        const result = {
-            input: params,
-            processed: true,
-            category: 'thinking-&-planning',
-            utilityType: this.getUtilityType()
-        };
-
-        return this.enhanceResult(result);
-    },
-
-    getUtilityType() {
-        const category = 'thinking-&-planning';
-        const typeMap = {
-            'thinking-&-planning': 'cognitive',
-            'learning-&-memory': 'educational',
-            'emotions-&-wellness': 'wellness',
-            'productivity-&-focus': 'productivity',
-            'relationships-&-social': 'social',
-            'writing-&-language': 'communication',
-            'math-&-logic': 'analytical',
-            'visual-&-design': 'creative',
-            'food-&-cooking': 'lifestyle',
-            'health-&-fitness': 'health',
-            'travel-&-adventure': 'lifestyle',
-            'audio-&-sound': 'media',
-            'productivity-tools': 'tools',
-            'privacy-&-security': 'security',
-            'finance-&-money': 'financial',
-            'home-&-lifestyle': 'lifestyle',
-            'personal-development': 'growth',
-            'life-management': 'management',
-            'fun-&-games': 'entertainment'
-        };
-
-        return typeMap[category] || 'general';
-    },
-
-    enhanceResult(result) {
-        // Add category-specific enhancements
-        const enhancements = this.getCategoryEnhancements();
-        return { ...result, ...enhancements };
-    },
-
-    getCategoryEnhancements() {
-        const category = 'thinking-&-planning';
-
-        switch (category) {
-            case 'thinking-&-planning':
-                return { cognitive: true, analytical: true };
-            case 'learning-&-memory':
-                return { educational: true, memory: true };
-            case 'emotions-&-wellness':
-                return { wellness: true, emotional: true };
-            case 'productivity-&-focus':
-                return { productivity: true, efficiency: true };
-            case 'relationships-&-social':
-                return { social: true, interpersonal: true };
-            default:
-                return { enhanced: true };
-        }
-    },
-
-    validate(params) {
-        return params !== null && params !== undefined;
-    },
-
-    getConfiguration() {
-        return {
-            version: '1.0.0',
-            category: 'thinking-&-planning',
-            complexity: 'medium',
-            expanded: true,
-            created: new Date().toISOString()
-        };
-    },
-
-    getHelp() {
-        return {
-            name: this.name,
-            description: this.description,
-            category: 'thinking-&-planning',
-            usage: 'execute(params)',
-            parameters: {
-                optional: ['options', 'config']
-            },
-            examples: [
-                'Basic usage: execute()',
-                'With options: execute({ option: "value" })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "strategic-thinker",
+    "name": "Strategic Thinker",
+    "category": "thinking & planning",
+    "description": "A thinking & planning utility",
+    "complexity": "advanced",
+    "action": "thinker",
+    "archetype": "coach",
+    "domain": "Strategic",
+    "intent": "Thinker gives targeted Strategic guidance with next actions.",
+    "workflow": [
+        "Assess strategic baseline",
+        "Find leverage points",
+        "Design short feedback loops",
+        "Set follow-up actions"
+    ],
+    "inputHint": "Describe current state, challenge, and desired outcome.",
+    "focusTerms": [
+        "strategic",
+        "thinker"
+    ]
 };
 
-export default StrategicThinker;
+export default createBespokeUtility(metadata);

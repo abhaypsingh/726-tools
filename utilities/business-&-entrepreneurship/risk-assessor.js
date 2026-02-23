@@ -1,28 +1,26 @@
-export const BusinessRiskAssessor = {
-    id: 'risk-assessor',
-    name: 'Business Risk Assessor',
-    description: 'Identify and evaluate business risks',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "risk-assessor",
+    "name": "Risk Assessor",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "assessor",
+    "archetype": "coach",
+    "domain": "Risk",
+    "intent": "Assessor gives targeted Risk guidance with next actions.",
+    "workflow": [
+        "Assess risk baseline",
+        "Find leverage points",
+        "Design short feedback loops",
+        "Set follow-up actions"
+    ],
+    "inputHint": "Describe current state, challenge, and desired outcome.",
+    "focusTerms": [
+        "risk",
+        "assessor"
+    ]
 };
 
-export default BusinessRiskAssessor;
+export default createBespokeUtility(metadata);

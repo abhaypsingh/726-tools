@@ -1,53 +1,27 @@
-export const ScientificUnitConverter = {
-    id: 'unit-converter-science',
-    name: 'Scientific Unit Converter',
-    description: 'Convert between scientific units and measurements',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Core functionality
-    execute(params) {
-        return {
-            success: true,
-            data: this.processData(params),
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement specific functionality here
-        return {
-            input: params,
-            result: 'Processed successfully',
-            metadata: this.getMetadata()
-        };
-    },
-
-    getMetadata() {
-        return {
-            version: '1.0.0',
-            category: 'science-&-nature',
-            complexity: 'medium',
-            lastUpdated: new Date().toISOString()
-        };
-    },
-
-    validate(params) {
-        return params && typeof params === 'object';
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            parameters: {
-                required: ['data'],
-                optional: ['options', 'format']
-            },
-            examples: [
-                'Basic usage: execute({ data: "sample" })',
-                'With options: execute({ data: "sample", options: {} })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "unit-converter-science",
+    "name": "Unit Converter Science",
+    "category": "science & nature",
+    "description": "A science & nature utility",
+    "complexity": "advanced",
+    "action": "converter",
+    "archetype": "quantify",
+    "domain": "Unit Science",
+    "intent": "Converter turns Unit Science input into clear metrics and decision-ready numbers.",
+    "workflow": [
+        "Collect unit science inputs",
+        "Normalize values and units",
+        "Compute core metrics",
+        "Recommend next move"
+    ],
+    "inputHint": "Enter numbers, assumptions, and targets (one per line or sentence).",
+    "focusTerms": [
+        "unit",
+        "converter",
+        "science"
+    ]
 };
 
-export default ScientificUnitConverter;
+export default createBespokeUtility(metadata);

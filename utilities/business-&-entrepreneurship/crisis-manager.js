@@ -1,28 +1,26 @@
-export const CrisisManager = {
-    id: 'crisis-manager',
-    name: 'Crisis Manager',
-    description: 'Manage and respond to business crises',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "crisis-manager",
+    "name": "Crisis Manager",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "manager",
+    "archetype": "plan",
+    "domain": "Crisis",
+    "intent": "Manager structures Crisis input into a practical step-by-step plan.",
+    "workflow": [
+        "Define crisis objective",
+        "Split work into phases",
+        "Order by dependency and impact",
+        "Assign clear execution steps"
+    ],
+    "inputHint": "Describe goal, constraints, and deadline.",
+    "focusTerms": [
+        "crisis",
+        "manager"
+    ]
 };
 
-export default CrisisManager;
+export default createBespokeUtility(metadata);

@@ -1,28 +1,27 @@
-export const SalesFunnelAnalyzer = {
-    id: 'sales-funnel-analyzer',
-    name: 'Sales Funnel Analyzer',
-    description: 'Analyze and optimize sales conversion funnels',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "sales-funnel-analyzer",
+    "name": "Sales Funnel Analyzer",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "analyzer",
+    "archetype": "inspect",
+    "domain": "Sales Funnel",
+    "intent": "Analyzer reviews Sales Funnel input, highlights signals, and flags risks.",
+    "workflow": [
+        "Parse sales funnel context",
+        "Identify key patterns",
+        "Flag constraints and risks",
+        "Propose corrective actions"
+    ],
+    "inputHint": "Paste items, notes, or data to analyze.",
+    "focusTerms": [
+        "sales",
+        "funnel",
+        "analyzer"
+    ]
 };
 
-export default SalesFunnelAnalyzer;
+export default createBespokeUtility(metadata);

@@ -1,28 +1,26 @@
-export const MeetingScheduler = {
-    id: 'meeting-scheduler',
-    name: 'Meeting Scheduler',
-    description: 'Schedule and coordinate business meetings',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "meeting-scheduler",
+    "name": "Meeting Scheduler",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "scheduler",
+    "archetype": "plan",
+    "domain": "Meeting",
+    "intent": "Scheduler structures Meeting input into a practical step-by-step plan.",
+    "workflow": [
+        "Define meeting objective",
+        "Split work into phases",
+        "Order by dependency and impact",
+        "Assign clear execution steps"
+    ],
+    "inputHint": "Describe goal, constraints, and deadline.",
+    "focusTerms": [
+        "meeting",
+        "scheduler"
+    ]
 };
 
-export default MeetingScheduler;
+export default createBespokeUtility(metadata);

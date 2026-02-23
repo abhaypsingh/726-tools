@@ -1,111 +1,26 @@
-export const SpeedReader = {
-    id: 'speed-reader',
-    name: 'Speed Reader',
-    description: 'Improve reading speed and comprehension',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Main functionality
-    execute(params = {}) {
-        return {
-            success: true,
-            data: this.processData(params),
-            category: 'learning-&-memory',
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement category-specific functionality
-        const result = {
-            input: params,
-            processed: true,
-            category: 'learning-&-memory',
-            utilityType: this.getUtilityType()
-        };
-
-        return this.enhanceResult(result);
-    },
-
-    getUtilityType() {
-        const category = 'learning-&-memory';
-        const typeMap = {
-            'thinking-&-planning': 'cognitive',
-            'learning-&-memory': 'educational',
-            'emotions-&-wellness': 'wellness',
-            'productivity-&-focus': 'productivity',
-            'relationships-&-social': 'social',
-            'writing-&-language': 'communication',
-            'math-&-logic': 'analytical',
-            'visual-&-design': 'creative',
-            'food-&-cooking': 'lifestyle',
-            'health-&-fitness': 'health',
-            'travel-&-adventure': 'lifestyle',
-            'audio-&-sound': 'media',
-            'productivity-tools': 'tools',
-            'privacy-&-security': 'security',
-            'finance-&-money': 'financial',
-            'home-&-lifestyle': 'lifestyle',
-            'personal-development': 'growth',
-            'life-management': 'management',
-            'fun-&-games': 'entertainment'
-        };
-
-        return typeMap[category] || 'general';
-    },
-
-    enhanceResult(result) {
-        // Add category-specific enhancements
-        const enhancements = this.getCategoryEnhancements();
-        return { ...result, ...enhancements };
-    },
-
-    getCategoryEnhancements() {
-        const category = 'learning-&-memory';
-
-        switch (category) {
-            case 'thinking-&-planning':
-                return { cognitive: true, analytical: true };
-            case 'learning-&-memory':
-                return { educational: true, memory: true };
-            case 'emotions-&-wellness':
-                return { wellness: true, emotional: true };
-            case 'productivity-&-focus':
-                return { productivity: true, efficiency: true };
-            case 'relationships-&-social':
-                return { social: true, interpersonal: true };
-            default:
-                return { enhanced: true };
-        }
-    },
-
-    validate(params) {
-        return params !== null && params !== undefined;
-    },
-
-    getConfiguration() {
-        return {
-            version: '1.0.0',
-            category: 'learning-&-memory',
-            complexity: 'medium',
-            expanded: true,
-            created: new Date().toISOString()
-        };
-    },
-
-    getHelp() {
-        return {
-            name: this.name,
-            description: this.description,
-            category: 'learning-&-memory',
-            usage: 'execute(params)',
-            parameters: {
-                optional: ['options', 'config']
-            },
-            examples: [
-                'Basic usage: execute()',
-                'With options: execute({ option: "value" })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "speed-reader",
+    "name": "Speed Reader",
+    "category": "learning & memory",
+    "description": "A learning & memory utility",
+    "complexity": "advanced",
+    "action": "reader",
+    "archetype": "coach",
+    "domain": "Speed",
+    "intent": "Reader gives targeted Speed guidance with next actions.",
+    "workflow": [
+        "Assess speed baseline",
+        "Find leverage points",
+        "Design short feedback loops",
+        "Set follow-up actions"
+    ],
+    "inputHint": "Describe current state, challenge, and desired outcome.",
+    "focusTerms": [
+        "speed",
+        "reader"
+    ]
 };
 
-export default SpeedReader;
+export default createBespokeUtility(metadata);

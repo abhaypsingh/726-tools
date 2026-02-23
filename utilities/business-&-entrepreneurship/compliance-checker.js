@@ -1,28 +1,26 @@
-export const ComplianceChecker = {
-    id: 'compliance-checker',
-    name: 'Compliance Checker',
-    description: 'Ensure business regulatory compliance',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "compliance-checker",
+    "name": "Compliance Checker",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "checker",
+    "archetype": "inspect",
+    "domain": "Compliance",
+    "intent": "Checker reviews Compliance input, highlights signals, and flags risks.",
+    "workflow": [
+        "Parse compliance context",
+        "Identify key patterns",
+        "Flag constraints and risks",
+        "Propose corrective actions"
+    ],
+    "inputHint": "Paste items, notes, or data to analyze.",
+    "focusTerms": [
+        "compliance",
+        "checker"
+    ]
 };
 
-export default ComplianceChecker;
+export default createBespokeUtility(metadata);

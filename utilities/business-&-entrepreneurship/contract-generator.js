@@ -1,28 +1,26 @@
-export const ContractGenerator = {
-    id: 'contract-generator',
-    name: 'Contract Generator',
-    description: 'Generate business contracts and agreements',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "contract-generator",
+    "name": "Contract Generator",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "generator",
+    "archetype": "generate",
+    "domain": "Contract",
+    "intent": "Generator creates concrete Contract outputs you can use immediately.",
+    "workflow": [
+        "Interpret contract direction",
+        "Generate option set",
+        "Refine top candidates",
+        "Return usable outputs"
+    ],
+    "inputHint": "Describe style, constraints, and desired output.",
+    "focusTerms": [
+        "contract",
+        "generator"
+    ]
 };
 
-export default ContractGenerator;
+export default createBespokeUtility(metadata);

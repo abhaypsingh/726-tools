@@ -1,28 +1,26 @@
-export const BrandBuilder = {
-    id: 'brand-builder',
-    name: 'Brand Builder',
-    description: 'Create and develop brand identity and strategy',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "brand-builder",
+    "name": "Brand Builder",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "builder",
+    "archetype": "plan",
+    "domain": "Brand",
+    "intent": "Builder structures Brand input into a practical step-by-step plan.",
+    "workflow": [
+        "Define brand objective",
+        "Split work into phases",
+        "Order by dependency and impact",
+        "Assign clear execution steps"
+    ],
+    "inputHint": "Describe goal, constraints, and deadline.",
+    "focusTerms": [
+        "brand",
+        "builder"
+    ]
 };
 
-export default BrandBuilder;
+export default createBespokeUtility(metadata);

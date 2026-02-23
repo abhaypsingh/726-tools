@@ -1,125 +1,26 @@
-// Identity Iterator - Explore identity variations
-export default {
-    init() {
-        return {
-            input: '',
-            output: null,
-            processing: false,
-            history: JSON.parse(localStorage.getItem('identity-iterator-history') || '[]'),
-            settings: JSON.parse(localStorage.getItem('identity-iterator-settings') || '{}')
-        };
-    },
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    render(container, state, setState) {
-        container.innerHTML = `
-            <div class="utility-workspace">
-                <h2>Identity Iterator</h2>
-                <p>Explore identity variations</p>
-
-                <div class="form-group">
-                    <label class="label">Input:</label>
-                    <textarea class="textarea" id="main-input" placeholder="Enter your input...">${state.input}</textarea>
-                </div>
-
-                <div class="utility-controls">
-                    <button class="btn btn-primary" id="process-btn" ${state.processing ? 'disabled' : ''}>
-                        ${state.processing ? 'Processing...' : 'Process'}
-                    </button>
-                    <button class="btn btn-secondary" id="reset-btn">Reset</button>
-                    
-                </div>
-
-                ${state.output ? this.renderOutput(state) : ''}
-
-                ${state.history.length > 0 ? `
-                <div class="card" style="margin-top: 20px;">
-                    <h3>History</h3>
-                    <div style="max-height: 200px; overflow-y: auto;">
-                        ${state.history.slice(-5).reverse().map(entry => `
-                            <div style="padding: 8px; border-bottom: 1px solid var(--color-neutral-200);">
-                                <small>${new Date(entry.timestamp).toLocaleString()}</small>
-                                <div>${typeof entry.output === 'object' ? entry.output.summary || 'Processed' : entry.output}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            </div>
-        `;
-
-        this.setupEventListeners(container, state, setState);
-    },
-
-    renderOutput(state) {
-        return `
-            <div class="result-box">
-                <h3>Result</h3>
-                <div>${typeof state.output === 'object' ? JSON.stringify(state.output, null, 2) : state.output}</div>
-            </div>
-        `;
-    },
-
-    setupEventListeners(container, state, setState) {
-        const mainInput = container.querySelector('#main-input');
-        if (mainInput) {
-            mainInput.addEventListener('input', (e) => {
-                setState({ input: e.target.value });
-            });
-        }
-
-        const processBtn = container.querySelector('#process-btn');
-        if (processBtn) {
-            processBtn.addEventListener('click', () => {
-                this.process(state, setState);
-            });
-        }
-
-        const resetBtn = container.querySelector('#reset-btn');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', () => {
-                setState({
-                    input: '',
-                    output: null
-                });
-            });
-        }
-    },
-
-    process(state, setState) {
-        setState({ processing: true });
-
-        setTimeout(() => {
-            const result = this.generate(state.input);
-            setState({
-                output: result,
-                processing: false,
-                history: [...state.history.slice(-9), {
-                    input: state.input,
-                    output: result,
-                    timestamp: Date.now()
-                }]
-            });
-            localStorage.setItem('identity-iterator-history', JSON.stringify(state.history));
-        }, 1000);
-    },
-
-    generate(input) {
-        const templates = [
-            'Generated result based on: ' + input,
-            'Created new content from: ' + input,
-            'Produced output using: ' + input
-        ];
-        return templates[Math.floor(Math.random() * templates.length)];
-    },
-
-    help() {
-        return `
-            <ul>
-                <li>Explore identity variations</li>
-                <li>Provide input to generate output</li>
-                <li>All processing happens locally in your browser</li>
-                <li>Your data is never sent anywhere</li>
-            </ul>
-        `;
-    }
+const metadata = {
+    "id": "identity-iterator",
+    "name": "Identity Iterator",
+    "category": "thinking & planning",
+    "description": "Explore identity variations",
+    "complexity": "intermediate",
+    "action": "iterator",
+    "archetype": "coach",
+    "domain": "Identity",
+    "intent": "Iterator gives targeted Identity guidance with next actions.",
+    "workflow": [
+        "Assess identity baseline",
+        "Find leverage points",
+        "Design short feedback loops",
+        "Set follow-up actions"
+    ],
+    "inputHint": "Describe current state, challenge, and desired outcome.",
+    "focusTerms": [
+        "identity",
+        "iterator"
+    ]
 };
+
+export default createBespokeUtility(metadata);

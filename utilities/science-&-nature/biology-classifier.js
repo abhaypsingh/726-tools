@@ -1,53 +1,26 @@
-export const BiologyClassifier = {
-    id: 'biology-classifier',
-    name: 'Biology Classifier',
-    description: 'Classify organisms using taxonomic systems',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Core functionality
-    execute(params) {
-        return {
-            success: true,
-            data: this.processData(params),
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement specific functionality here
-        return {
-            input: params,
-            result: 'Processed successfully',
-            metadata: this.getMetadata()
-        };
-    },
-
-    getMetadata() {
-        return {
-            version: '1.0.0',
-            category: 'science-&-nature',
-            complexity: 'medium',
-            lastUpdated: new Date().toISOString()
-        };
-    },
-
-    validate(params) {
-        return params && typeof params === 'object';
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            parameters: {
-                required: ['data'],
-                optional: ['options', 'format']
-            },
-            examples: [
-                'Basic usage: execute({ data: "sample" })',
-                'With options: execute({ data: "sample", options: {} })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "biology-classifier",
+    "name": "Biology Classifier",
+    "category": "science & nature",
+    "description": "A science & nature utility",
+    "complexity": "advanced",
+    "action": "classifier",
+    "archetype": "coach",
+    "domain": "Biology",
+    "intent": "Classifier gives targeted Biology guidance with next actions.",
+    "workflow": [
+        "Assess biology baseline",
+        "Find leverage points",
+        "Design short feedback loops",
+        "Set follow-up actions"
+    ],
+    "inputHint": "Describe current state, challenge, and desired outcome.",
+    "focusTerms": [
+        "biology",
+        "classifier"
+    ]
 };
 
-export default BiologyClassifier;
+export default createBespokeUtility(metadata);

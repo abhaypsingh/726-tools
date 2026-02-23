@@ -1,5 +1,8 @@
 import { analyzeUtilityIntent, runUtilityIntent } from './utility-intent-engine.js';
 
+const APP_NAME = '726 Tools';
+const UTILITY_STATE_SCHEMA_VERSION = 1;
+
 // Main Application Controller
 export const App = {
     state: {
@@ -15,7 +18,8 @@ export const App = {
     },
 
     // Initialize Application
-    init() {
+    async init() {
+        await this.normalizeStoredUtilityReferences();
         this.setupTheme();
         this.setupRouter();
         this.setupEventListeners();
@@ -71,7 +75,15 @@ export const App = {
                     await this.renderHome(app);
                     break;
                 case 'tool':
-                    await this.renderUtility(app, params[0]);
+                    if (params.length >= 2) {
+                        await this.renderUtility(
+                            app,
+                            decodeURIComponent(params[1]),
+                            decodeURIComponent(params[0])
+                        );
+                    } else {
+                        await this.renderUtility(app, decodeURIComponent(params[0] || ''));
+                    }
                     break;
                 case 'category':
                     await this.renderCategory(app, params[0]);
@@ -113,10 +125,10 @@ export const App = {
             }
 
             // Utility navigation
-            if (e.target.closest('[data-utility]')) {
+            if (e.target.closest('[data-utility-route]')) {
                 e.preventDefault();
-                const utilityId = e.target.closest('[data-utility]').getAttribute('data-utility');
-                this.navigate(`tool/${utilityId}`);
+                const route = e.target.closest('[data-utility-route]').getAttribute('data-utility-route');
+                this.navigate(route);
             }
 
             // Category filter
@@ -129,8 +141,8 @@ export const App = {
 
             // Favorite toggle
             if (e.target.closest('.favorite-btn')) {
-                const utilityId = e.target.closest('.favorite-btn').getAttribute('data-favorite');
-                this.toggleFavorite(utilityId);
+                const utilityRef = e.target.closest('.favorite-btn').getAttribute('data-favorite');
+                this.toggleFavorite(utilityRef);
             }
         });
 
@@ -141,7 +153,7 @@ export const App = {
                 const { UtilityRegistry } = await import('./registry.js');
                 const utilities = UtilityRegistry.getAllUtilities();
                 const randomUtility = utilities[Math.floor(Math.random() * utilities.length)];
-                this.navigate(`tool/${randomUtility.id}`);
+                this.navigate(this.getUtilityRoute(randomUtility));
             });
         }
 
@@ -218,8 +230,8 @@ export const App = {
                 <div class="recently-used">
                     <h3>Recently Used</h3>
                     <div class="utility-grid">
-                        ${this.state.recentlyUsed.slice(0, 4).map(id => {
-                            const utility = this.getUtilityById(UtilityRegistry, id);
+                        ${this.state.recentlyUsed.slice(0, 4).map(ref => {
+                            const utility = this.resolveUtilityReference(UtilityRegistry, ref);
                             if (!utility) return '';
                             return this.renderUtilityCard(utility);
                         }).join('')}
@@ -231,8 +243,8 @@ export const App = {
                 <div class="favorites">
                     <h3>Favorites</h3>
                     <div class="utility-grid">
-                        ${this.state.favorites.map(id => {
-                            const utility = this.getUtilityById(UtilityRegistry, id);
+                        ${this.state.favorites.map(ref => {
+                            const utility = this.resolveUtilityReference(UtilityRegistry, ref);
                             if (!utility) return '';
                             return this.renderUtilityCard(utility);
                         }).join('')}
@@ -289,15 +301,17 @@ export const App = {
     },
 
     renderUtilityCard(utility) {
-        const isFavorite = this.state.favorites.includes(utility.id);
+        const utilityRef = this.getUtilityReference(utility);
+        const isFavorite = this.state.favorites.includes(utilityRef);
         const icon = utility.icon || '🛠️';
         const utilityName = utility.name || utility.id || 'Untitled Utility';
         const utilityDescription = utility.description || 'No description available.';
+        const utilityRoute = this.getUtilityRoute(utility);
 
         return `
-            <div class="card utility-card" data-utility="${utility.id}">
+            <div class="card utility-card" data-utility-route="${utilityRoute}">
                 <button class="favorite-btn utility-badge ${isFavorite ? 'active' : ''}"
-                    data-favorite="${utility.id}"
+                    data-favorite="${utilityRef}"
                     onclick="event.stopPropagation()">
                     ${isFavorite ? '★' : '☆'}
                 </button>
@@ -312,54 +326,76 @@ export const App = {
         `;
     },
 
-    async renderUtility(container, utilityId) {
+    async renderUtility(container, utilityId, categoryPath = null) {
         const { UtilityRegistry } = await import('./registry.js');
-        const utility = this.getUtilityById(UtilityRegistry, utilityId);
+        const normalizedCategoryPath = categoryPath ? String(categoryPath).toLowerCase() : null;
+        const matches = this.findUtilityMatches(UtilityRegistry, utilityId, normalizedCategoryPath);
 
-        if (!utility) {
+        if (matches.length === 0) {
             container.innerHTML = `
                 <div class="error-message">
                     <h2>Utility not found</h2>
+                    <p>This utility route could not be resolved.</p>
                     <button class="btn btn-primary" onclick="App.navigate('home')">Go Home</button>
                 </div>
             `;
             return;
         }
 
-        // Track as recently used
-        this.addToRecentlyUsed(utilityId);
+        if (matches.length > 1 && !normalizedCategoryPath) {
+            container.innerHTML = `
+                <div class="card" style="max-width: 900px; margin: 20px auto;">
+                    <h2>Choose Utility Category</h2>
+                    <p>Multiple tools use the ID <code>${this.escapeHtml(utilityId)}</code>. Pick one:</p>
+                    <div class="utility-grid" style="margin-top: 16px;">
+                        ${matches.map(match => `
+                            <div class="card utility-card" data-utility-route="${this.getUtilityRoute(match)}">
+                                <h3 class="utility-title">${this.escapeHtml(match.name)}</h3>
+                                <p class="utility-description">${this.escapeHtml(match.category)}</p>
+                                <span class="badge">${this.escapeHtml(match.id)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        const utility = matches[0];
+        const utilityRef = this.getUtilityReference(utility);
         const utilityName = utility.name || utility.id || 'Untitled Utility';
         const utilityDescription = utility.description || 'No description available.';
 
-        // Load utility module if available. Intent engine still works if module import fails.
-        if (!this.state.loadedUtilities.has(utilityId)) {
+        this.addToRecentlyUsed(utilityRef);
+
+        if (!this.state.loadedUtilities.has(utilityRef)) {
             let loadedUtility = null;
 
             try {
-                const categoryPath = utility.category.toLowerCase().replace(/\s+/g, '-');
-                const module = await import(`../utilities/${categoryPath}/${utilityId}.js`);
+                const moduleCategoryPath = this.categoryToPath(utility.category);
+                const module = await import(`../utilities/${moduleCategoryPath}/${utility.id}.js`);
                 loadedUtility =
                     module.default ||
                     Object.values(module).find(value => value && typeof value === 'object') ||
                     null;
             } catch (error) {
-                console.warn(`Module import failed for ${utilityId}. Using intent engine fallback.`, error);
+                console.warn(`Module import failed for ${utilityRef}. Using intent engine fallback.`, error);
             }
 
-            this.state.loadedUtilities.set(utilityId, loadedUtility);
+            this.state.loadedUtilities.set(utilityRef, loadedUtility);
         }
 
-        const utilityModule = this.state.loadedUtilities.get(utilityId) || null;
+        const utilityModule = this.state.loadedUtilities.get(utilityRef) || null;
+        const moduleImplemented = this.isUtilityModuleImplemented(utilityModule);
 
-        // Initialize utility state if needed
-        if (!this.state.currentUtility || this.state.currentUtility.id !== utilityId) {
-            const savedState = this.loadUtilityState(utilityId) || {};
+        if (!this.state.currentUtility || this.state.currentUtility.id !== utilityRef) {
+            const savedState = this.loadUtilityState(utilityRef) || {};
             const initialState = utilityModule && typeof utilityModule.init === 'function'
                 ? utilityModule.init()
                 : {};
 
             this.state.currentUtility = {
-                id: utilityId,
+                id: utilityRef,
                 state: { ...initialState, ...savedState }
             };
         }
@@ -376,7 +412,7 @@ export const App = {
 
                 <div class="utility-help">
                     <h3>How to use</h3>
-                    ${this.getUtilityHelpHtml(utilityModule || {}, utility)}
+                    ${this.getUtilityHelpHtml(moduleImplemented ? utilityModule : {}, utility)}
                 </div>
             </div>
         `;
@@ -384,13 +420,13 @@ export const App = {
         // Render utility
         const contentContainer = document.getElementById('utility-content');
         const setState = (newState = {}, options = {}) => {
-            if (!this.state.currentUtility || this.state.currentUtility.id !== utilityId) {
+            if (!this.state.currentUtility || this.state.currentUtility.id !== utilityRef) {
                 return;
             }
 
             Object.assign(this.state.currentUtility.state, newState);
             const currentState = this.state.currentUtility.state;
-            this.saveUtilityState(utilityId, currentState);
+            this.saveUtilityState(utilityRef, currentState);
 
             const shouldRerender = options.rerender ?? this.shouldRerenderOnStateChange(newState);
             if (shouldRerender) {
@@ -421,11 +457,11 @@ export const App = {
     renderAbout(container) {
         container.innerHTML = `
             <div style="max-width: 800px; margin: 40px auto;">
-                <h1>About 501 Tools</h1>
+                <h1>About ${APP_NAME}</h1>
 
                 <div class="card" style="margin: 20px 0;">
                     <h2>Philosophy</h2>
-                    <p>501 Tools is a collection of delightful utilities that solve micro-frictions in daily life.
+                    <p>${APP_NAME} is a collection of focused utilities that solve micro-frictions in daily life.
                     Each tool addresses a specific need you might not have known you had, but once discovered,
                     becomes indispensable.</p>
                 </div>
@@ -438,7 +474,7 @@ export const App = {
 
                 <div class="card" style="margin: 20px 0;">
                     <h2>Works Offline</h2>
-                    <p>Once loaded, all 501 tools work completely offline. Perfect for airplane mode,
+                    <p>Once loaded, all tools work completely offline. Perfect for airplane mode,
                     remote locations, or simply when you want to disconnect.</p>
                 </div>
 
@@ -651,12 +687,113 @@ export const App = {
         return null;
     },
 
+    categoryToPath(category) {
+        return String(category || '')
+            .toLowerCase()
+            .replace(/\s+/g, '-');
+    },
+
+    getUtilityReference(utility) {
+        return `${this.categoryToPath(utility.category)}::${utility.id}`;
+    },
+
+    parseUtilityReference(reference) {
+        if (typeof reference !== 'string' || !reference.includes('::')) {
+            return null;
+        }
+
+        const [categoryPath, utilityId] = reference.split('::');
+        if (!categoryPath || !utilityId) {
+            return null;
+        }
+
+        return { categoryPath, utilityId };
+    },
+
+    getUtilityRoute(utility) {
+        const categoryPath = encodeURIComponent(this.categoryToPath(utility.category));
+        const utilityId = encodeURIComponent(utility.id);
+        return `tool/${categoryPath}/${utilityId}`;
+    },
+
+    findUtilityMatches(registry, utilityId, categoryPath = null) {
+        if (!registry || typeof registry.getAllUtilities !== 'function') {
+            return [];
+        }
+
+        const normalizedId = String(utilityId || '').trim();
+        if (!normalizedId) {
+            return [];
+        }
+
+        let matches = registry.getAllUtilities().filter(utility => utility.id === normalizedId);
+
+        if (categoryPath) {
+            matches = matches.filter(utility => this.categoryToPath(utility.category) === categoryPath);
+        }
+
+        return matches;
+    },
+
+    resolveUtilityReference(registry, reference) {
+        const parsed = this.parseUtilityReference(reference);
+        if (parsed) {
+            const [match] = this.findUtilityMatches(registry, parsed.utilityId, parsed.categoryPath);
+            if (match) {
+                return match;
+            }
+        }
+
+        return this.getUtilityById(registry, reference);
+    },
+
+    async normalizeStoredUtilityReferences() {
+        const { UtilityRegistry } = await import('./registry.js');
+
+        const normalizeList = (items) => {
+            const normalized = [];
+
+            for (const item of items) {
+                const match = this.resolveUtilityReference(UtilityRegistry, item);
+                if (!match) {
+                    continue;
+                }
+
+                normalized.push(this.getUtilityReference(match));
+            }
+
+            return [...new Set(normalized)];
+        };
+
+        const nextFavorites = normalizeList(Array.isArray(this.state.favorites) ? this.state.favorites : []);
+        const nextRecentlyUsed = normalizeList(Array.isArray(this.state.recentlyUsed) ? this.state.recentlyUsed : []).slice(0, 10);
+
+        this.state.favorites = nextFavorites;
+        this.state.recentlyUsed = nextRecentlyUsed;
+
+        localStorage.setItem('favorites', JSON.stringify(nextFavorites));
+        localStorage.setItem('recentlyUsed', JSON.stringify(nextRecentlyUsed));
+    },
+
     renderUtilityContent(container, utilityModule, utility, state, setState) {
         if (!container) {
             return;
         }
 
         try {
+            if (this.isUtilityModuleImplemented(utilityModule)) {
+                if (typeof utilityModule.render === 'function') {
+                    utilityModule.render(container, state, setState);
+                    return;
+                }
+
+                const callableMethods = this.getCallableMethods(utilityModule);
+                if (callableMethods.length > 0) {
+                    this.renderGenericUtility(container, utilityModule, utility, state, setState);
+                    return;
+                }
+            }
+
             this.renderIntentUtility(container, utility, state, setState);
         } catch (error) {
             console.error(`Render failed for ${utility.id}:`, error);
@@ -667,6 +804,40 @@ export const App = {
                 </div>
             `;
         }
+    },
+
+    isUtilityModuleImplemented(utilityModule) {
+        if (!utilityModule || typeof utilityModule !== 'object') {
+            return false;
+        }
+
+        if (utilityModule.unimplemented === true || utilityModule.implementationStatus === 'unimplemented') {
+            return false;
+        }
+
+        const methodSources = ['render', 'execute', 'process', 'help']
+            .map(name => utilityModule[name])
+            .filter(fn => typeof fn === 'function')
+            .map(fn => String(fn).toLowerCase())
+            .join('\n');
+
+        const placeholderMarkers = [
+            'a powerful tool for',
+            'enter your data',
+            'processed ${words.length} words',
+            'generated result based on',
+            'implement category-specific functionality'
+        ];
+
+        if (placeholderMarkers.some(marker => methodSources.includes(marker))) {
+            return false;
+        }
+
+        if (typeof utilityModule.render === 'function') {
+            return true;
+        }
+
+        return this.getCallableMethods(utilityModule).length > 0;
     },
 
     renderIntentUtility(container, utility, state, setState) {
@@ -705,7 +876,7 @@ export const App = {
                 </div>
 
                 ${executionError ? `
-                    <div class="card" style="margin-top: 20px;">
+                    <div class="card" style="margin-top: 20px;" role="alert" aria-live="assertive">
                         <h3>Error</h3>
                         <p style="color: var(--color-danger);">${this.escapeHtml(executionError)}</p>
                     </div>
@@ -755,6 +926,16 @@ export const App = {
             runButton.addEventListener('click', () => {
                 const nextInput = inputField ? inputField.value : inputText;
 
+                if (!nextInput.trim()) {
+                    setState(
+                        {
+                            executionError: 'Please provide input before running this utility.'
+                        },
+                        { rerender: true }
+                    );
+                    return;
+                }
+
                 try {
                     const intentResult = runUtilityIntent(utility, nextInput);
                     const currentHistory = Array.isArray(state.intentHistory) ? state.intentHistory : [];
@@ -793,7 +974,7 @@ export const App = {
         const recommendations = Array.isArray(result.recommendations) ? result.recommendations : [];
 
         return `
-            <div class="card" style="margin-top: 20px;">
+            <div class="card" style="margin-top: 20px;" role="status" aria-live="polite">
                 <h3>Result</h3>
                 <p>${this.escapeHtml(result.summary || 'No summary available.')}</p>
                 ${metrics.length > 0 ? `
@@ -878,7 +1059,7 @@ export const App = {
                 </div>
 
                 ${(state.executionError || hasResult) ? `
-                    <div class="card">
+                    <div class="card" role="${state.executionError ? 'alert' : 'status'}" aria-live="polite">
                         <h3>Output</h3>
                         ${state.executionError
                             ? `<p style="color: var(--color-danger);">${this.escapeHtml(state.executionError)}</p>`
@@ -991,7 +1172,11 @@ export const App = {
         try {
             return JSON.parse(trimmed);
         } catch (error) {
-            throw new Error(`Input must be valid JSON: ${error.message}`);
+            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                throw new Error(`Input must be valid JSON: ${error.message}`);
+            }
+
+            return { input: trimmed };
         }
     },
 
@@ -1078,29 +1263,35 @@ export const App = {
             .replaceAll("'", '&#039;');
     },
 
-    toggleFavorite(utilityId) {
-        const index = this.state.favorites.indexOf(utilityId);
+    toggleFavorite(utilityRef) {
+        const index = this.state.favorites.indexOf(utilityRef);
         if (index > -1) {
             this.state.favorites.splice(index, 1);
         } else {
-            this.state.favorites.push(utilityId);
+            this.state.favorites.push(utilityRef);
         }
         localStorage.setItem('favorites', JSON.stringify(this.state.favorites));
         this.renderHome(document.getElementById('app'));
         this.showToast(index > -1 ? 'Removed from favorites' : 'Added to favorites');
     },
 
-    addToRecentlyUsed(utilityId) {
+    addToRecentlyUsed(utilityRef) {
         this.state.recentlyUsed = [
-            utilityId,
-            ...this.state.recentlyUsed.filter(id => id !== utilityId)
+            utilityRef,
+            ...this.state.recentlyUsed.filter(ref => ref !== utilityRef)
         ].slice(0, 10);
         localStorage.setItem('recentlyUsed', JSON.stringify(this.state.recentlyUsed));
     },
 
     saveUtilityState(utilityId, state) {
         if (this.state.settings.autoSave !== false) {
-            localStorage.setItem(`utility_${utilityId}`, JSON.stringify(state));
+            const payload = {
+                schemaVersion: UTILITY_STATE_SCHEMA_VERSION,
+                updatedAt: new Date().toISOString(),
+                data: state
+            };
+
+            localStorage.setItem(`utility_${utilityId}`, JSON.stringify(payload));
         }
     },
 
@@ -1111,7 +1302,23 @@ export const App = {
         }
 
         try {
-            return JSON.parse(saved);
+            const parsed = JSON.parse(saved);
+
+            if (
+                parsed &&
+                typeof parsed === 'object' &&
+                parsed.schemaVersion === UTILITY_STATE_SCHEMA_VERSION &&
+                parsed.data &&
+                typeof parsed.data === 'object'
+            ) {
+                return parsed.data;
+            }
+
+            if (parsed && typeof parsed === 'object') {
+                return parsed;
+            }
+
+            return null;
         } catch {
             localStorage.removeItem(`utility_${utilityId}`);
             return null;
@@ -1179,7 +1386,7 @@ export const App = {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `501tools_export_${Date.now()}.json`;
+        a.download = `726tools_export_${Date.now()}.json`;
         a.click();
         URL.revokeObjectURL(url);
 
@@ -1211,9 +1418,15 @@ export const App = {
                     }
                 }
 
-                this.setupTheme();
-                this.showToast('Data imported successfully!');
-                this.renderData(document.getElementById('app'));
+                this.normalizeStoredUtilityReferences()
+                    .catch((normalizationError) => {
+                        console.warn('Reference normalization failed after import:', normalizationError);
+                    })
+                    .finally(() => {
+                        this.setupTheme();
+                        this.showToast('Data imported successfully!');
+                        this.renderData(document.getElementById('app'));
+                    });
             } catch (error) {
                 this.showToast('Error importing data: ' + error.message);
             }

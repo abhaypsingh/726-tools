@@ -1,111 +1,26 @@
-export const NutritionAnalyzer = {
-    id: 'nutrition-analyzer',
-    name: 'Nutrition Analyzer',
-    description: 'Analyze nutritional intake',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Main functionality
-    execute(params = {}) {
-        return {
-            success: true,
-            data: this.processData(params),
-            category: 'health-&-fitness',
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement category-specific functionality
-        const result = {
-            input: params,
-            processed: true,
-            category: 'health-&-fitness',
-            utilityType: this.getUtilityType()
-        };
-
-        return this.enhanceResult(result);
-    },
-
-    getUtilityType() {
-        const category = 'health-&-fitness';
-        const typeMap = {
-            'thinking-&-planning': 'cognitive',
-            'learning-&-memory': 'educational',
-            'emotions-&-wellness': 'wellness',
-            'productivity-&-focus': 'productivity',
-            'relationships-&-social': 'social',
-            'writing-&-language': 'communication',
-            'math-&-logic': 'analytical',
-            'visual-&-design': 'creative',
-            'food-&-cooking': 'lifestyle',
-            'health-&-fitness': 'health',
-            'travel-&-adventure': 'lifestyle',
-            'audio-&-sound': 'media',
-            'productivity-tools': 'tools',
-            'privacy-&-security': 'security',
-            'finance-&-money': 'financial',
-            'home-&-lifestyle': 'lifestyle',
-            'personal-development': 'growth',
-            'life-management': 'management',
-            'fun-&-games': 'entertainment'
-        };
-
-        return typeMap[category] || 'general';
-    },
-
-    enhanceResult(result) {
-        // Add category-specific enhancements
-        const enhancements = this.getCategoryEnhancements();
-        return { ...result, ...enhancements };
-    },
-
-    getCategoryEnhancements() {
-        const category = 'health-&-fitness';
-
-        switch (category) {
-            case 'thinking-&-planning':
-                return { cognitive: true, analytical: true };
-            case 'learning-&-memory':
-                return { educational: true, memory: true };
-            case 'emotions-&-wellness':
-                return { wellness: true, emotional: true };
-            case 'productivity-&-focus':
-                return { productivity: true, efficiency: true };
-            case 'relationships-&-social':
-                return { social: true, interpersonal: true };
-            default:
-                return { enhanced: true };
-        }
-    },
-
-    validate(params) {
-        return params !== null && params !== undefined;
-    },
-
-    getConfiguration() {
-        return {
-            version: '1.0.0',
-            category: 'health-&-fitness',
-            complexity: 'medium',
-            expanded: true,
-            created: new Date().toISOString()
-        };
-    },
-
-    getHelp() {
-        return {
-            name: this.name,
-            description: this.description,
-            category: 'health-&-fitness',
-            usage: 'execute(params)',
-            parameters: {
-                optional: ['options', 'config']
-            },
-            examples: [
-                'Basic usage: execute()',
-                'With options: execute({ option: "value" })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "nutrition-analyzer",
+    "name": "Nutrition Analyzer",
+    "category": "health & fitness",
+    "description": "A health & fitness utility",
+    "complexity": "advanced",
+    "action": "analyzer",
+    "archetype": "inspect",
+    "domain": "Nutrition",
+    "intent": "Analyzer reviews Nutrition input, highlights signals, and flags risks.",
+    "workflow": [
+        "Parse nutrition context",
+        "Identify key patterns",
+        "Flag constraints and risks",
+        "Propose corrective actions"
+    ],
+    "inputHint": "Paste items, notes, or data to analyze.",
+    "focusTerms": [
+        "nutrition",
+        "analyzer"
+    ]
 };
 
-export default NutritionAnalyzer;
+export default createBespokeUtility(metadata);

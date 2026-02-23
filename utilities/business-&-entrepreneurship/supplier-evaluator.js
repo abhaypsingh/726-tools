@@ -1,28 +1,26 @@
-export const SupplierEvaluator = {
-    id: 'supplier-evaluator',
-    name: 'Supplier Evaluator',
-    description: 'Evaluate and compare potential suppliers',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "supplier-evaluator",
+    "name": "Supplier Evaluator",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "evaluator",
+    "archetype": "coach",
+    "domain": "Supplier",
+    "intent": "Evaluator gives targeted Supplier guidance with next actions.",
+    "workflow": [
+        "Assess supplier baseline",
+        "Find leverage points",
+        "Design short feedback loops",
+        "Set follow-up actions"
+    ],
+    "inputHint": "Describe current state, challenge, and desired outcome.",
+    "focusTerms": [
+        "supplier",
+        "evaluator"
+    ]
 };
 
-export default SupplierEvaluator;
+export default createBespokeUtility(metadata);

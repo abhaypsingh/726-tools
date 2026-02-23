@@ -1,28 +1,26 @@
-export const PerformanceDashboard = {
-    id: 'performance-dashboard',
-    name: 'Performance Dashboard',
-    description: 'Track key business performance metrics',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "performance-dashboard",
+    "name": "Performance Dashboard",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "dashboard",
+    "archetype": "coach",
+    "domain": "Performance",
+    "intent": "Dashboard gives targeted Performance guidance with next actions.",
+    "workflow": [
+        "Assess performance baseline",
+        "Find leverage points",
+        "Design short feedback loops",
+        "Set follow-up actions"
+    ],
+    "inputHint": "Describe current state, challenge, and desired outcome.",
+    "focusTerms": [
+        "performance",
+        "dashboard"
+    ]
 };
 
-export default PerformanceDashboard;
+export default createBespokeUtility(metadata);

@@ -1,111 +1,27 @@
-export const SocialSkillsTrainer = {
-    id: 'social-skills-trainer',
-    name: 'Social Skills Trainer',
-    description: 'Practice social interactions',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Main functionality
-    execute(params = {}) {
-        return {
-            success: true,
-            data: this.processData(params),
-            category: 'relationships-&-social',
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement category-specific functionality
-        const result = {
-            input: params,
-            processed: true,
-            category: 'relationships-&-social',
-            utilityType: this.getUtilityType()
-        };
-
-        return this.enhanceResult(result);
-    },
-
-    getUtilityType() {
-        const category = 'relationships-&-social';
-        const typeMap = {
-            'thinking-&-planning': 'cognitive',
-            'learning-&-memory': 'educational',
-            'emotions-&-wellness': 'wellness',
-            'productivity-&-focus': 'productivity',
-            'relationships-&-social': 'social',
-            'writing-&-language': 'communication',
-            'math-&-logic': 'analytical',
-            'visual-&-design': 'creative',
-            'food-&-cooking': 'lifestyle',
-            'health-&-fitness': 'health',
-            'travel-&-adventure': 'lifestyle',
-            'audio-&-sound': 'media',
-            'productivity-tools': 'tools',
-            'privacy-&-security': 'security',
-            'finance-&-money': 'financial',
-            'home-&-lifestyle': 'lifestyle',
-            'personal-development': 'growth',
-            'life-management': 'management',
-            'fun-&-games': 'entertainment'
-        };
-
-        return typeMap[category] || 'general';
-    },
-
-    enhanceResult(result) {
-        // Add category-specific enhancements
-        const enhancements = this.getCategoryEnhancements();
-        return { ...result, ...enhancements };
-    },
-
-    getCategoryEnhancements() {
-        const category = 'relationships-&-social';
-
-        switch (category) {
-            case 'thinking-&-planning':
-                return { cognitive: true, analytical: true };
-            case 'learning-&-memory':
-                return { educational: true, memory: true };
-            case 'emotions-&-wellness':
-                return { wellness: true, emotional: true };
-            case 'productivity-&-focus':
-                return { productivity: true, efficiency: true };
-            case 'relationships-&-social':
-                return { social: true, interpersonal: true };
-            default:
-                return { enhanced: true };
-        }
-    },
-
-    validate(params) {
-        return params !== null && params !== undefined;
-    },
-
-    getConfiguration() {
-        return {
-            version: '1.0.0',
-            category: 'relationships-&-social',
-            complexity: 'medium',
-            expanded: true,
-            created: new Date().toISOString()
-        };
-    },
-
-    getHelp() {
-        return {
-            name: this.name,
-            description: this.description,
-            category: 'relationships-&-social',
-            usage: 'execute(params)',
-            parameters: {
-                optional: ['options', 'config']
-            },
-            examples: [
-                'Basic usage: execute()',
-                'With options: execute({ option: "value" })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "social-skills-trainer",
+    "name": "Social Skills Trainer",
+    "category": "relationships & social",
+    "description": "A relationships & social utility",
+    "complexity": "advanced",
+    "action": "trainer",
+    "archetype": "coach",
+    "domain": "Social Skills",
+    "intent": "Trainer gives targeted Social Skills guidance with next actions.",
+    "workflow": [
+        "Assess social skills baseline",
+        "Find leverage points",
+        "Design short feedback loops",
+        "Set follow-up actions"
+    ],
+    "inputHint": "Describe current state, challenge, and desired outcome.",
+    "focusTerms": [
+        "social",
+        "skills",
+        "trainer"
+    ]
 };
 
-export default SocialSkillsTrainer;
+export default createBespokeUtility(metadata);

@@ -1,28 +1,26 @@
-export const InventoryOptimizer = {
-    id: 'inventory-optimizer',
-    name: 'Inventory Optimizer',
-    description: 'Optimize inventory levels and reduce costs',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "inventory-optimizer",
+    "name": "Inventory Optimizer",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "optimizer",
+    "archetype": "optimize",
+    "domain": "Inventory",
+    "intent": "Optimizer optimizes Inventory workflows for better performance.",
+    "workflow": [
+        "Audit inventory flow",
+        "Find bottlenecks",
+        "Apply targeted improvements",
+        "Measure gains and iterate"
+    ],
+    "inputHint": "Describe current process, bottlenecks, and goals.",
+    "focusTerms": [
+        "inventory",
+        "optimizer"
+    ]
 };
 
-export default InventoryOptimizer;
+export default createBespokeUtility(metadata);

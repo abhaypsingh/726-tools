@@ -1,28 +1,26 @@
-export const PartnershipFinder = {
-    id: 'partnership-finder',
-    name: 'Partnership Finder',
-    description: 'Identify and evaluate potential business partnerships',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "partnership-finder",
+    "name": "Partnership Finder",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "finder",
+    "archetype": "explore",
+    "domain": "Partnership",
+    "intent": "Finder explores Partnership options and prioritizes the strongest paths.",
+    "workflow": [
+        "Frame partnership search",
+        "Score candidate options",
+        "Highlight tradeoffs",
+        "Prioritize top opportunities"
+    ],
+    "inputHint": "List options, context, and selection criteria.",
+    "focusTerms": [
+        "partnership",
+        "finder"
+    ]
 };
 
-export default PartnershipFinder;
+export default createBespokeUtility(metadata);

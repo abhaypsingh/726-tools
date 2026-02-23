@@ -1,53 +1,26 @@
-export const DigitalLabNotebook = {
-    id: 'lab-notebook',
-    name: 'Digital Lab Notebook',
-    description: 'Record and organize laboratory experiments',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Core functionality
-    execute(params) {
-        return {
-            success: true,
-            data: this.processData(params),
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement specific functionality here
-        return {
-            input: params,
-            result: 'Processed successfully',
-            metadata: this.getMetadata()
-        };
-    },
-
-    getMetadata() {
-        return {
-            version: '1.0.0',
-            category: 'science-&-nature',
-            complexity: 'medium',
-            lastUpdated: new Date().toISOString()
-        };
-    },
-
-    validate(params) {
-        return params && typeof params === 'object';
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            parameters: {
-                required: ['data'],
-                optional: ['options', 'format']
-            },
-            examples: [
-                'Basic usage: execute({ data: "sample" })',
-                'With options: execute({ data: "sample", options: {} })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "lab-notebook",
+    "name": "Lab Notebook",
+    "category": "science & nature",
+    "description": "A science & nature utility",
+    "complexity": "advanced",
+    "action": "creator",
+    "archetype": "generate",
+    "domain": "Notebook",
+    "intent": "Creator creates concrete Notebook outputs you can use immediately.",
+    "workflow": [
+        "Interpret notebook direction",
+        "Generate option set",
+        "Refine top candidates",
+        "Return usable outputs"
+    ],
+    "inputHint": "Describe style, constraints, and desired output.",
+    "focusTerms": [
+        "lab",
+        "notebook"
+    ]
 };
 
-export default DigitalLabNotebook;
+export default createBespokeUtility(metadata);

@@ -1,28 +1,26 @@
-export const DigitalTransformationGuide = {
-    id: 'digital-transformation',
-    name: 'Digital Transformation Guide',
-    description: 'Guide digital transformation initiatives',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "digital-transformation",
+    "name": "Digital Transformation",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "transformation",
+    "archetype": "coach",
+    "domain": "Digital",
+    "intent": "Transformation gives targeted Digital guidance with next actions.",
+    "workflow": [
+        "Assess digital baseline",
+        "Find leverage points",
+        "Design short feedback loops",
+        "Set follow-up actions"
+    ],
+    "inputHint": "Describe current state, challenge, and desired outcome.",
+    "focusTerms": [
+        "digital",
+        "transformation"
+    ]
 };
 
-export default DigitalTransformationGuide;
+export default createBespokeUtility(metadata);

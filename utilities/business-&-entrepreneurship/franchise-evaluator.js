@@ -1,28 +1,26 @@
-export const FranchiseEvaluator = {
-    id: 'franchise-evaluator',
-    name: 'Franchise Evaluator',
-    description: 'Evaluate franchise opportunities',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "franchise-evaluator",
+    "name": "Franchise Evaluator",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "evaluator",
+    "archetype": "coach",
+    "domain": "Franchise",
+    "intent": "Evaluator gives targeted Franchise guidance with next actions.",
+    "workflow": [
+        "Assess franchise baseline",
+        "Find leverage points",
+        "Design short feedback loops",
+        "Set follow-up actions"
+    ],
+    "inputHint": "Describe current state, challenge, and desired outcome.",
+    "focusTerms": [
+        "franchise",
+        "evaluator"
+    ]
 };
 
-export default FranchiseEvaluator;
+export default createBespokeUtility(metadata);

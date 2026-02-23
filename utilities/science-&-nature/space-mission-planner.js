@@ -1,53 +1,27 @@
-export const SpaceMissionPlanner = {
-    id: 'space-mission-planner',
-    name: 'Space Mission Planner',
-    description: 'Plan space missions and calculate orbital mechanics',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Core functionality
-    execute(params) {
-        return {
-            success: true,
-            data: this.processData(params),
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement specific functionality here
-        return {
-            input: params,
-            result: 'Processed successfully',
-            metadata: this.getMetadata()
-        };
-    },
-
-    getMetadata() {
-        return {
-            version: '1.0.0',
-            category: 'science-&-nature',
-            complexity: 'medium',
-            lastUpdated: new Date().toISOString()
-        };
-    },
-
-    validate(params) {
-        return params && typeof params === 'object';
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            parameters: {
-                required: ['data'],
-                optional: ['options', 'format']
-            },
-            examples: [
-                'Basic usage: execute({ data: "sample" })',
-                'With options: execute({ data: "sample", options: {} })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "space-mission-planner",
+    "name": "Space Mission Planner",
+    "category": "science & nature",
+    "description": "A science & nature utility",
+    "complexity": "advanced",
+    "action": "planner",
+    "archetype": "plan",
+    "domain": "Space Mission",
+    "intent": "Planner structures Space Mission input into a practical step-by-step plan.",
+    "workflow": [
+        "Define space mission objective",
+        "Split work into phases",
+        "Order by dependency and impact",
+        "Assign clear execution steps"
+    ],
+    "inputHint": "Describe goal, constraints, and deadline.",
+    "focusTerms": [
+        "space",
+        "mission",
+        "planner"
+    ]
 };
 
-export default SpaceMissionPlanner;
+export default createBespokeUtility(metadata);

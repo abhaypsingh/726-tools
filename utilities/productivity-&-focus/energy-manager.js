@@ -1,111 +1,26 @@
-export const EnergyManager = {
-    id: 'energy-manager',
-    name: 'Energy Manager',
-    description: 'Manage energy levels throughout day',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Main functionality
-    execute(params = {}) {
-        return {
-            success: true,
-            data: this.processData(params),
-            category: 'productivity-&-focus',
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement category-specific functionality
-        const result = {
-            input: params,
-            processed: true,
-            category: 'productivity-&-focus',
-            utilityType: this.getUtilityType()
-        };
-
-        return this.enhanceResult(result);
-    },
-
-    getUtilityType() {
-        const category = 'productivity-&-focus';
-        const typeMap = {
-            'thinking-&-planning': 'cognitive',
-            'learning-&-memory': 'educational',
-            'emotions-&-wellness': 'wellness',
-            'productivity-&-focus': 'productivity',
-            'relationships-&-social': 'social',
-            'writing-&-language': 'communication',
-            'math-&-logic': 'analytical',
-            'visual-&-design': 'creative',
-            'food-&-cooking': 'lifestyle',
-            'health-&-fitness': 'health',
-            'travel-&-adventure': 'lifestyle',
-            'audio-&-sound': 'media',
-            'productivity-tools': 'tools',
-            'privacy-&-security': 'security',
-            'finance-&-money': 'financial',
-            'home-&-lifestyle': 'lifestyle',
-            'personal-development': 'growth',
-            'life-management': 'management',
-            'fun-&-games': 'entertainment'
-        };
-
-        return typeMap[category] || 'general';
-    },
-
-    enhanceResult(result) {
-        // Add category-specific enhancements
-        const enhancements = this.getCategoryEnhancements();
-        return { ...result, ...enhancements };
-    },
-
-    getCategoryEnhancements() {
-        const category = 'productivity-&-focus';
-
-        switch (category) {
-            case 'thinking-&-planning':
-                return { cognitive: true, analytical: true };
-            case 'learning-&-memory':
-                return { educational: true, memory: true };
-            case 'emotions-&-wellness':
-                return { wellness: true, emotional: true };
-            case 'productivity-&-focus':
-                return { productivity: true, efficiency: true };
-            case 'relationships-&-social':
-                return { social: true, interpersonal: true };
-            default:
-                return { enhanced: true };
-        }
-    },
-
-    validate(params) {
-        return params !== null && params !== undefined;
-    },
-
-    getConfiguration() {
-        return {
-            version: '1.0.0',
-            category: 'productivity-&-focus',
-            complexity: 'medium',
-            expanded: true,
-            created: new Date().toISOString()
-        };
-    },
-
-    getHelp() {
-        return {
-            name: this.name,
-            description: this.description,
-            category: 'productivity-&-focus',
-            usage: 'execute(params)',
-            parameters: {
-                optional: ['options', 'config']
-            },
-            examples: [
-                'Basic usage: execute()',
-                'With options: execute({ option: "value" })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "energy-manager",
+    "name": "Energy Manager",
+    "category": "productivity & focus",
+    "description": "A productivity & focus utility",
+    "complexity": "advanced",
+    "action": "manager",
+    "archetype": "plan",
+    "domain": "Energy",
+    "intent": "Manager structures Energy input into a practical step-by-step plan.",
+    "workflow": [
+        "Define energy objective",
+        "Split work into phases",
+        "Order by dependency and impact",
+        "Assign clear execution steps"
+    ],
+    "inputHint": "Describe goal, constraints, and deadline.",
+    "focusTerms": [
+        "energy",
+        "manager"
+    ]
 };
 
-export default EnergyManager;
+export default createBespokeUtility(metadata);

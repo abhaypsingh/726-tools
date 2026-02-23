@@ -1,53 +1,26 @@
-export const AnimalBehaviorTracker = {
-    id: 'animal-tracker',
-    name: 'Animal Behavior Tracker',
-    description: 'Track and analyze animal behaviors and patterns',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Core functionality
-    execute(params) {
-        return {
-            success: true,
-            data: this.processData(params),
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement specific functionality here
-        return {
-            input: params,
-            result: 'Processed successfully',
-            metadata: this.getMetadata()
-        };
-    },
-
-    getMetadata() {
-        return {
-            version: '1.0.0',
-            category: 'science-&-nature',
-            complexity: 'medium',
-            lastUpdated: new Date().toISOString()
-        };
-    },
-
-    validate(params) {
-        return params && typeof params === 'object';
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            parameters: {
-                required: ['data'],
-                optional: ['options', 'format']
-            },
-            examples: [
-                'Basic usage: execute({ data: "sample" })',
-                'With options: execute({ data: "sample", options: {} })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "animal-tracker",
+    "name": "Animal Tracker",
+    "category": "science & nature",
+    "description": "A science & nature utility",
+    "complexity": "advanced",
+    "action": "tracker",
+    "archetype": "inspect",
+    "domain": "Animal",
+    "intent": "Tracker reviews Animal input, highlights signals, and flags risks.",
+    "workflow": [
+        "Parse animal context",
+        "Identify key patterns",
+        "Flag constraints and risks",
+        "Propose corrective actions"
+    ],
+    "inputHint": "Paste items, notes, or data to analyze.",
+    "focusTerms": [
+        "animal",
+        "tracker"
+    ]
 };
 
-export default AnimalBehaviorTracker;
+export default createBespokeUtility(metadata);

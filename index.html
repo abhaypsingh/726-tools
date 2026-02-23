@@ -14,7 +14,7 @@
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="#" class="logo" data-route="home">501 Tools</a>
+                <a href="#" class="logo" data-route="home">726 Tools</a>
                 <nav class="nav" role="navigation">
                     <button class="btn btn-ghost" data-route="about">About</button>
                     <button class="btn btn-ghost" data-route="settings">Settings</button>
@@ -39,7 +39,7 @@
                 </div>
                 <div>
                     <h4>Works Offline</h4>
-                    <p>Once loaded, all 501 tools work without internet.</p>
+                    <p>Once loaded, all tools work without internet.</p>
                 </div>
                 <div>
                     <h4>Your Data</h4>
@@ -62,7 +62,9 @@
             // No init needed - it's a static object
 
             // Start the app
-            App.init();
+            App.init().catch((error) => {
+                console.error('Failed to initialize app:', error);
+            });
 
             // Make App available globally for inline handlers
             window.App = App;

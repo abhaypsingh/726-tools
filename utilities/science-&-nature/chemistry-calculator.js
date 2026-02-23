@@ -1,53 +1,26 @@
-export const ChemistryCalculator = {
-    id: 'chemistry-calculator',
-    name: 'Chemistry Calculator',
-    description: 'Calculate molecular weights, stoichiometry, and reactions',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Core functionality
-    execute(params) {
-        return {
-            success: true,
-            data: this.processData(params),
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement specific functionality here
-        return {
-            input: params,
-            result: 'Processed successfully',
-            metadata: this.getMetadata()
-        };
-    },
-
-    getMetadata() {
-        return {
-            version: '1.0.0',
-            category: 'science-&-nature',
-            complexity: 'medium',
-            lastUpdated: new Date().toISOString()
-        };
-    },
-
-    validate(params) {
-        return params && typeof params === 'object';
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            parameters: {
-                required: ['data'],
-                optional: ['options', 'format']
-            },
-            examples: [
-                'Basic usage: execute({ data: "sample" })',
-                'With options: execute({ data: "sample", options: {} })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "chemistry-calculator",
+    "name": "Chemistry Calculator",
+    "category": "science & nature",
+    "description": "A science & nature utility",
+    "complexity": "advanced",
+    "action": "calculator",
+    "archetype": "quantify",
+    "domain": "Chemistry",
+    "intent": "Calculator turns Chemistry input into clear metrics and decision-ready numbers.",
+    "workflow": [
+        "Collect chemistry inputs",
+        "Normalize values and units",
+        "Compute core metrics",
+        "Recommend next move"
+    ],
+    "inputHint": "Enter numbers, assumptions, and targets (one per line or sentence).",
+    "focusTerms": [
+        "chemistry",
+        "calculator"
+    ]
 };
 
-export default ChemistryCalculator;
+export default createBespokeUtility(metadata);

@@ -1,53 +1,26 @@
-export const EvolutionSimulator = {
-    id: 'evolution-simulator',
-    name: 'Evolution Simulator',
-    description: 'Simulate evolutionary processes and natural selection',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Core functionality
-    execute(params) {
-        return {
-            success: true,
-            data: this.processData(params),
-            timestamp: new Date().toISOString()
-        };
-    },
-
-    processData(params) {
-        // Implement specific functionality here
-        return {
-            input: params,
-            result: 'Processed successfully',
-            metadata: this.getMetadata()
-        };
-    },
-
-    getMetadata() {
-        return {
-            version: '1.0.0',
-            category: 'science-&-nature',
-            complexity: 'medium',
-            lastUpdated: new Date().toISOString()
-        };
-    },
-
-    validate(params) {
-        return params && typeof params === 'object';
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            parameters: {
-                required: ['data'],
-                optional: ['options', 'format']
-            },
-            examples: [
-                'Basic usage: execute({ data: "sample" })',
-                'With options: execute({ data: "sample", options: {} })'
-            ]
-        };
-    }
+const metadata = {
+    "id": "evolution-simulator",
+    "name": "Evolution Simulator",
+    "category": "science & nature",
+    "description": "A science & nature utility",
+    "complexity": "advanced",
+    "action": "simulator",
+    "archetype": "simulate",
+    "domain": "Evolution",
+    "intent": "Simulator models Evolution scenarios to compare likely outcomes.",
+    "workflow": [
+        "Define evolution assumptions",
+        "Model base, upside, downside",
+        "Compare scenario deltas",
+        "Select robust strategy"
+    ],
+    "inputHint": "Provide assumptions, variables, and possible scenarios.",
+    "focusTerms": [
+        "evolution",
+        "simulator"
+    ]
 };
 
-export default EvolutionSimulator;
+export default createBespokeUtility(metadata);

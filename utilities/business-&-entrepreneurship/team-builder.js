@@ -1,28 +1,26 @@
-export const TeamBuilder = {
-    id: 'team-builder',
-    name: 'Team Builder',
-    description: 'Build and manage effective teams',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "team-builder",
+    "name": "Team Builder",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "builder",
+    "archetype": "plan",
+    "domain": "Team",
+    "intent": "Builder structures Team input into a practical step-by-step plan.",
+    "workflow": [
+        "Define team objective",
+        "Split work into phases",
+        "Order by dependency and impact",
+        "Assign clear execution steps"
+    ],
+    "inputHint": "Describe goal, constraints, and deadline.",
+    "focusTerms": [
+        "team",
+        "builder"
+    ]
 };
 
-export default TeamBuilder;
+export default createBespokeUtility(metadata);

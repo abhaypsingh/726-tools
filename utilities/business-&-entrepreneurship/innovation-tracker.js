@@ -1,28 +1,26 @@
-export const InnovationTracker = {
-    id: 'innovation-tracker',
-    name: 'Innovation Tracker',
-    description: 'Track and manage innovation initiatives',
+import { createBespokeUtility } from '../_core/bespoke-utility-factory.js';
 
-    // Implementation would go here
-    execute(params) {
-        return {
-            success: true,
-            data: 'This utility is ready for implementation',
-            params
-        };
-    },
-
-    validate(params) {
-        return params ? true : false;
-    },
-
-    getHelp() {
-        return {
-            description: this.description,
-            usage: 'Call execute() with appropriate parameters',
-            examples: ['Basic usage example would go here']
-        };
-    }
+const metadata = {
+    "id": "innovation-tracker",
+    "name": "Innovation Tracker",
+    "category": "business & entrepreneurship",
+    "description": "A business & entrepreneurship utility",
+    "complexity": "beginner",
+    "action": "tracker",
+    "archetype": "inspect",
+    "domain": "Innovation",
+    "intent": "Tracker reviews Innovation input, highlights signals, and flags risks.",
+    "workflow": [
+        "Parse innovation context",
+        "Identify key patterns",
+        "Flag constraints and risks",
+        "Propose corrective actions"
+    ],
+    "inputHint": "Paste items, notes, or data to analyze.",
+    "focusTerms": [
+        "innovation",
+        "tracker"
+    ]
 };
 
-export default InnovationTracker;
+export default createBespokeUtility(metadata);
