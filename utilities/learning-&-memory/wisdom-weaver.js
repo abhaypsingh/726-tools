@@ -110,7 +110,7 @@ export default {
             'Produced output using: ' + input
         ];
         return templates[Math.floor(Math.random() * templates.length)];
-    }
+    },
 
     help() {
         return `

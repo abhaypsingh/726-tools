@@ -111,7 +111,7 @@ export default {
             transformed: transformed,
             changes: input.length + ' characters processed'
         };
-    }
+    },
 
     help() {
         return `

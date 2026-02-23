@@ -114,7 +114,7 @@ export default {
             startTime: Date.now(),
             message: 'Timer started for ' + (duration || 60) + ' seconds'
         };
-    }
+    },
 
     help() {
         return `

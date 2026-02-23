@@ -111,7 +111,7 @@ export default {
             complexity: input.length > 100 ? 'Complex' : 'Simple'
         };
         return analysis;
-    }
+    },
 
     help() {
         return `

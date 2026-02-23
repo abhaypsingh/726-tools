@@ -110,7 +110,7 @@ export default {
             message: isValid ? 'Validation passed' : 'Validation failed',
             details: 'Checked ' + (input ? input.length : 0) + ' characters'
         };
-    }
+    },
 
     help() {
         return `

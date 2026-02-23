@@ -162,7 +162,9 @@ export const App = {
     // Render Methods
     async renderHome(container) {
         const { UtilityRegistry } = await import('./registry.js');
-        let utilities = UtilityRegistry.getAllUtilities();
+        const allUtilities = UtilityRegistry.getAllUtilities();
+        const totalUtilities = allUtilities.length;
+        let utilities = allUtilities;
 
         // Apply filters
         if (this.state.selectedCategory !== 'all') {
@@ -182,7 +184,7 @@ export const App = {
         const categories = UtilityRegistry.getCategories();
         const categoryCounts = {};
         categories.forEach(cat => {
-            categoryCounts[cat] = UtilityRegistry.getAllUtilities()
+            categoryCounts[cat] = allUtilities
                 .filter(u => u.category === cat).length;
         });
 
@@ -191,7 +193,7 @@ export const App = {
                 <input
                     type="search"
                     class="search-input"
-                    placeholder="Search 501 tools... (Ctrl+K)"
+                    placeholder="Search ${totalUtilities} tools... (Ctrl+K)"
                     value="${this.state.searchQuery}"
                     id="search-input"
                 />
@@ -200,7 +202,7 @@ export const App = {
             <div class="category-nav">
                 <button class="category-chip ${this.state.selectedCategory === 'all' ? 'active' : ''}"
                     data-category="all">
-                    All (501)
+                    All (${totalUtilities})
                 </button>
                 ${categories.map(cat => `
                     <button class="category-chip ${this.state.selectedCategory === cat ? 'active' : ''}"
@@ -215,7 +217,7 @@ export const App = {
                     <h3>Recently Used</h3>
                     <div class="utility-grid">
                         ${this.state.recentlyUsed.slice(0, 4).map(id => {
-                            const utility = UtilityRegistry.getUtility(id);
+                            const utility = this.getUtilityById(UtilityRegistry, id);
                             if (!utility) return '';
                             return this.renderUtilityCard(utility);
                         }).join('')}
@@ -228,7 +230,7 @@ export const App = {
                     <h3>Favorites</h3>
                     <div class="utility-grid">
                         ${this.state.favorites.map(id => {
-                            const utility = UtilityRegistry.getUtility(id);
+                            const utility = this.getUtilityById(UtilityRegistry, id);
                             if (!utility) return '';
                             return this.renderUtilityCard(utility);
                         }).join('')}
@@ -286,6 +288,7 @@ export const App = {
 
     renderUtilityCard(utility) {
         const isFavorite = this.state.favorites.includes(utility.id);
+        const icon = utility.icon || '🛠️';
 
         return `
             <div class="card utility-card" data-utility="${utility.id}">
@@ -294,7 +297,7 @@ export const App = {
                     onclick="event.stopPropagation()">
                     ${isFavorite ? '★' : '☆'}
                 </button>
-                <div class="utility-icon">${utility.icon}</div>
+                <div class="utility-icon">${icon}</div>
                 <h3 class="utility-title">${utility.name}</h3>
                 <p class="utility-description">${utility.description}</p>
                 <div class="utility-tags">
@@ -307,7 +310,7 @@ export const App = {
 
     async renderUtility(container, utilityId) {
         const { UtilityRegistry } = await import('./registry.js');
-        const utility = UtilityRegistry.getUtility(utilityId);
+        const utility = this.getUtilityById(UtilityRegistry, utilityId);
 
         if (!utility) {
             container.innerHTML = `
@@ -325,8 +328,17 @@ export const App = {
         // Load utility module if not already loaded
         if (!this.state.loadedUtilities.has(utilityId)) {
             try {
-                const module = await import(`../utilities/${utility.category.toLowerCase().replace(/\s+/g, '-')}/${utilityId}.js`);
-                this.state.loadedUtilities.set(utilityId, module.default);
+                const categoryPath = utility.category.toLowerCase().replace(/\s+/g, '-');
+                const module = await import(`../utilities/${categoryPath}/${utilityId}.js`);
+                const loadedUtility =
+                    module.default ||
+                    Object.values(module).find(value => value && typeof value === 'object');
+
+                if (!loadedUtility) {
+                    throw new Error('Utility module did not export a usable object');
+                }
+
+                this.state.loadedUtilities.set(utilityId, loadedUtility);
             } catch (error) {
                 console.error(`Error loading utility ${utilityId}:`, error);
                 container.innerHTML = `
@@ -344,9 +356,12 @@ export const App = {
 
         // Initialize utility state if needed
         if (!this.state.currentUtility || this.state.currentUtility.id !== utilityId) {
+            const savedState = this.loadUtilityState(utilityId) || {};
+            const initialState = typeof utilityModule.init === 'function' ? utilityModule.init() : {};
+
             this.state.currentUtility = {
                 id: utilityId,
-                state: utilityModule.init ? utilityModule.init() : {}
+                state: { ...initialState, ...savedState }
             };
         }
 
@@ -362,29 +377,48 @@ export const App = {
 
                 <div class="utility-help">
                     <h3>How to use</h3>
-                    ${utilityModule.help ? utilityModule.help() : `
-                        <ul>
-                            <li>This utility helps you ${utility.description.toLowerCase()}</li>
-                            <li>All processing happens in your browser</li>
-                            <li>Your data stays on your device</li>
-                        </ul>
-                    `}
+                    ${this.getUtilityHelpHtml(utilityModule, utility)}
                 </div>
             </div>
         `;
 
         // Render utility
         const contentContainer = document.getElementById('utility-content');
-        if (utilityModule.render) {
-            utilityModule.render(
-                contentContainer,
-                this.state.currentUtility.state,
-                (newState) => {
-                    this.state.currentUtility.state = { ...this.state.currentUtility.state, ...newState };
-                    this.saveUtilityState(utilityId, this.state.currentUtility.state);
-                }
-            );
-        }
+        const setState = (newState = {}, options = {}) => {
+            if (!this.state.currentUtility || this.state.currentUtility.id !== utilityId) {
+                return;
+            }
+
+            this.state.currentUtility.state = {
+                ...this.state.currentUtility.state,
+                ...newState
+            };
+            this.saveUtilityState(utilityId, this.state.currentUtility.state);
+
+            const shouldRerender = options.rerender ?? this.shouldRerenderOnStateChange(newState);
+            if (shouldRerender) {
+                this.renderUtilityContent(
+                    contentContainer,
+                    utilityModule,
+                    utility,
+                    this.state.currentUtility.state,
+                    setState
+                );
+            }
+        };
+
+        this.renderUtilityContent(
+            contentContainer,
+            utilityModule,
+            utility,
+            this.state.currentUtility.state,
+            setState
+        );
+    },
+
+    async renderCategory(container, category) {
+        this.state.selectedCategory = category ? decodeURIComponent(category) : 'all';
+        await this.renderHome(container);
     },
 
     renderAbout(container) {
@@ -604,6 +638,292 @@ export const App = {
     },
 
     // Helper Methods
+    getUtilityById(registry, utilityId) {
+        if (registry && typeof registry.getUtility === 'function') {
+            return registry.getUtility(utilityId);
+        }
+
+        if (registry && typeof registry.getById === 'function') {
+            return registry.getById(utilityId);
+        }
+
+        if (registry && typeof registry.getAllUtilities === 'function') {
+            return registry.getAllUtilities().find(util => util.id === utilityId);
+        }
+
+        return null;
+    },
+
+    renderUtilityContent(container, utilityModule, utility, state, setState) {
+        if (!container) {
+            return;
+        }
+
+        try {
+            if (typeof utilityModule.render === 'function') {
+                utilityModule.render(container, state, setState);
+                return;
+            }
+
+            this.renderGenericUtility(container, utilityModule, utility, state, setState);
+        } catch (error) {
+            console.error(`Render failed for ${utility.id}:`, error);
+            container.innerHTML = `
+                <div class="error-message">
+                    <h2>Error rendering utility</h2>
+                    <p>${this.escapeHtml(error.message || 'Unknown render error')}</p>
+                </div>
+            `;
+        }
+    },
+
+    renderGenericUtility(container, utilityModule, utility, state, setState) {
+        const callableMethods = this.getCallableMethods(utilityModule);
+
+        if (callableMethods.length === 0) {
+            container.innerHTML = `
+                <div class="card">
+                    <h3>No runnable interface available</h3>
+                    <p>This utility module loaded, but it does not expose a render or callable method.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const defaultMethod = this.getDefaultCallableMethod(callableMethods);
+        const selectedMethod = callableMethods.includes(state.selectedMethod)
+            ? state.selectedMethod
+            : defaultMethod;
+        const rawInput = typeof state.rawInput === 'string' ? state.rawInput : '{}';
+        const hasResult = Object.prototype.hasOwnProperty.call(state, 'executionResult');
+
+        container.innerHTML = `
+            <div class="utility-workspace">
+                <div class="card" style="margin-bottom: 20px;">
+                    <h3>Run Utility</h3>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label for="generic-method">Method</label>
+                        <select class="input" id="generic-method">
+                            ${callableMethods.map(method => `
+                                <option value="${method}" ${method === selectedMethod ? 'selected' : ''}>
+                                    ${method}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="generic-input">Input JSON</label>
+                        <textarea
+                            class="textarea"
+                            id="generic-input"
+                            placeholder='Use object: {"key":"value"} or array for positional args: [arg1,arg2]'
+                            style="min-height: 120px;"
+                        >${this.escapeHtml(rawInput)}</textarea>
+                    </div>
+
+                    <button class="btn btn-primary" id="generic-run-btn">Run</button>
+                </div>
+
+                ${(state.executionError || hasResult) ? `
+                    <div class="card">
+                        <h3>Output</h3>
+                        ${state.executionError
+                            ? `<p style="color: var(--color-danger);">${this.escapeHtml(state.executionError)}</p>`
+                            : `<pre style="white-space: pre-wrap; word-break: break-word; margin: 0;">${this.escapeHtml(this.formatUtilityResult(state.executionResult))}</pre>`
+                        }
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        const methodSelect = container.querySelector('#generic-method');
+        const inputField = container.querySelector('#generic-input');
+        const runButton = container.querySelector('#generic-run-btn');
+
+        if (methodSelect) {
+            methodSelect.addEventListener('change', (e) => {
+                setState(
+                    {
+                        selectedMethod: e.target.value,
+                        executionError: null
+                    },
+                    { rerender: true }
+                );
+            });
+        }
+
+        if (inputField) {
+            inputField.addEventListener('input', (e) => {
+                setState({ rawInput: e.target.value }, { rerender: false });
+            });
+        }
+
+        if (runButton) {
+            runButton.addEventListener('click', async () => {
+                const methodName = methodSelect ? methodSelect.value : selectedMethod;
+                const method = utilityModule[methodName];
+
+                if (typeof method !== 'function') {
+                    setState(
+                        { executionError: `Method "${methodName}" is not callable` },
+                        { rerender: true }
+                    );
+                    return;
+                }
+
+                try {
+                    const parsedInput = this.parseUtilityInput(inputField ? inputField.value : rawInput);
+                    const args = Array.isArray(parsedInput) ? parsedInput : [parsedInput];
+                    const executionResult = await method.apply(utilityModule, args);
+
+                    setState(
+                        {
+                            selectedMethod: methodName,
+                            executionResult,
+                            executionError: null
+                        },
+                        { rerender: true }
+                    );
+                } catch (error) {
+                    setState(
+                        {
+                            selectedMethod: methodName,
+                            executionError: error.message || 'Failed to run utility'
+                        },
+                        { rerender: true }
+                    );
+                }
+            });
+        }
+    },
+
+    getCallableMethods(utilityModule) {
+        const nonCallableKeys = new Set([
+            'id',
+            'name',
+            'description',
+            'category',
+            'icon',
+            'complexity',
+            'render',
+            'help',
+            'init',
+            'setupEventListeners',
+            'process'
+        ]);
+
+        return Object.keys(utilityModule).filter(key => {
+            return typeof utilityModule[key] === 'function' && !nonCallableKeys.has(key);
+        });
+    },
+
+    getDefaultCallableMethod(methodNames) {
+        const preferredMethods = ['execute', 'create', 'createForecast', 'provideAdvice', 'run', 'calculate'];
+
+        for (const preferred of preferredMethods) {
+            if (methodNames.includes(preferred)) {
+                return preferred;
+            }
+        }
+
+        return methodNames[0];
+    },
+
+    parseUtilityInput(inputText) {
+        const trimmed = inputText.trim();
+        if (!trimmed) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(trimmed);
+        } catch (error) {
+            throw new Error(`Input must be valid JSON: ${error.message}`);
+        }
+    },
+
+    formatUtilityResult(result) {
+        if (result === undefined) {
+            return 'No result returned';
+        }
+
+        if (typeof result === 'string') {
+            return result;
+        }
+
+        try {
+            return JSON.stringify(result, null, 2);
+        } catch {
+            return String(result);
+        }
+    },
+
+    getUtilityHelpHtml(utilityModule, utility) {
+        try {
+            if (typeof utilityModule.help === 'function') {
+                return utilityModule.help();
+            }
+
+            if (typeof utilityModule.getHelp === 'function') {
+                const help = utilityModule.getHelp();
+
+                if (typeof help === 'string') {
+                    return help;
+                }
+
+                if (help && typeof help === 'object') {
+                    const examples = Array.isArray(help.examples) ? help.examples : [];
+                    const usage = help.usage ? `<li>Usage: ${this.escapeHtml(help.usage)}</li>` : '';
+
+                    return `
+                        <ul>
+                            ${usage}
+                            <li>Method-based utility runner is available in this page</li>
+                            ${examples.slice(0, 3).map(example =>
+                                `<li>${this.escapeHtml(example)}</li>`
+                            ).join('')}
+                        </ul>
+                    `;
+                }
+            }
+        } catch (error) {
+            console.error(`Help rendering failed for ${utility.id}:`, error);
+        }
+
+        return `
+            <ul>
+                <li>This utility helps you ${this.escapeHtml(utility.description.toLowerCase())}</li>
+                <li>All processing happens in your browser</li>
+                <li>Your data stays on your device</li>
+            </ul>
+        `;
+    },
+
+    shouldRerenderOnStateChange(newState) {
+        const keys = Object.keys(newState || {});
+        if (keys.length === 0) {
+            return false;
+        }
+
+        if (Object.values(newState).some(value => value !== null && typeof value === 'object')) {
+            return true;
+        }
+
+        return keys.some(key =>
+            /(result|output|history|error|analysis|forecast|plan|report|recommend|summary|score|status|generated|processed|calculated|insight|data)/i.test(key)
+        );
+    },
+
+    escapeHtml(value) {
+        return String(value)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    },
+
     toggleFavorite(utilityId) {
         const index = this.state.favorites.indexOf(utilityId);
         if (index > -1) {
@@ -632,7 +952,16 @@ export const App = {
 
     loadUtilityState(utilityId) {
         const saved = localStorage.getItem(`utility_${utilityId}`);
-        return saved ? JSON.parse(saved) : null;
+        if (!saved) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(saved);
+        } catch {
+            localStorage.removeItem(`utility_${utilityId}`);
+            return null;
+        }
     },
 
     saveSettings() {

@@ -5090,6 +5090,10 @@ export const UtilityRegistry = {
         return this.utilities.find(util => util.id === id);
     },
 
+    getUtility(id) {
+        return this.getById(id);
+    },
+
     search(query) {
         const lowerQuery = query.toLowerCase();
         return this.utilities.filter(util =>
