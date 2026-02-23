@@ -1,3 +1,5 @@
+import { analyzeUtilityIntent, runUtilityIntent } from './utility-intent-engine.js';
+
 // Main Application Controller
 export const App = {
     state: {
@@ -289,6 +291,8 @@ export const App = {
     renderUtilityCard(utility) {
         const isFavorite = this.state.favorites.includes(utility.id);
         const icon = utility.icon || '🛠️';
+        const utilityName = utility.name || utility.id || 'Untitled Utility';
+        const utilityDescription = utility.description || 'No description available.';
 
         return `
             <div class="card utility-card" data-utility="${utility.id}">
@@ -298,8 +302,8 @@ export const App = {
                     ${isFavorite ? '★' : '☆'}
                 </button>
                 <div class="utility-icon">${icon}</div>
-                <h3 class="utility-title">${utility.name}</h3>
-                <p class="utility-description">${utility.description}</p>
+                <h3 class="utility-title">${utilityName}</h3>
+                <p class="utility-description">${utilityDescription}</p>
                 <div class="utility-tags">
                     <span class="badge">${utility.category}</span>
                     ${utility.complexity ? `<span class="badge">${utility.complexity}</span>` : ''}
@@ -324,40 +328,35 @@ export const App = {
 
         // Track as recently used
         this.addToRecentlyUsed(utilityId);
+        const utilityName = utility.name || utility.id || 'Untitled Utility';
+        const utilityDescription = utility.description || 'No description available.';
 
-        // Load utility module if not already loaded
+        // Load utility module if available. Intent engine still works if module import fails.
         if (!this.state.loadedUtilities.has(utilityId)) {
+            let loadedUtility = null;
+
             try {
                 const categoryPath = utility.category.toLowerCase().replace(/\s+/g, '-');
                 const module = await import(`../utilities/${categoryPath}/${utilityId}.js`);
-                const loadedUtility =
+                loadedUtility =
                     module.default ||
-                    Object.values(module).find(value => value && typeof value === 'object');
-
-                if (!loadedUtility) {
-                    throw new Error('Utility module did not export a usable object');
-                }
-
-                this.state.loadedUtilities.set(utilityId, loadedUtility);
+                    Object.values(module).find(value => value && typeof value === 'object') ||
+                    null;
             } catch (error) {
-                console.error(`Error loading utility ${utilityId}:`, error);
-                container.innerHTML = `
-                    <div class="error-message">
-                        <h2>Error loading utility</h2>
-                        <p>${error.message}</p>
-                        <button class="btn btn-primary" onclick="App.navigate('home')">Go Home</button>
-                    </div>
-                `;
-                return;
+                console.warn(`Module import failed for ${utilityId}. Using intent engine fallback.`, error);
             }
+
+            this.state.loadedUtilities.set(utilityId, loadedUtility);
         }
 
-        const utilityModule = this.state.loadedUtilities.get(utilityId);
+        const utilityModule = this.state.loadedUtilities.get(utilityId) || null;
 
         // Initialize utility state if needed
         if (!this.state.currentUtility || this.state.currentUtility.id !== utilityId) {
             const savedState = this.loadUtilityState(utilityId) || {};
-            const initialState = typeof utilityModule.init === 'function' ? utilityModule.init() : {};
+            const initialState = utilityModule && typeof utilityModule.init === 'function'
+                ? utilityModule.init()
+                : {};
 
             this.state.currentUtility = {
                 id: utilityId,
@@ -369,15 +368,15 @@ export const App = {
             <div class="utility-page">
                 <div class="utility-header">
                     <button class="btn btn-ghost" onclick="history.back()">← Back</button>
-                    <h1>${utility.name}</h1>
-                    <p>${utility.description}</p>
+                    <h1>${utilityName}</h1>
+                    <p>${utilityDescription}</p>
                 </div>
 
                 <div id="utility-content"></div>
 
                 <div class="utility-help">
                     <h3>How to use</h3>
-                    ${this.getUtilityHelpHtml(utilityModule, utility)}
+                    ${this.getUtilityHelpHtml(utilityModule || {}, utility)}
                 </div>
             </div>
         `;
@@ -389,11 +388,9 @@ export const App = {
                 return;
             }
 
-            this.state.currentUtility.state = {
-                ...this.state.currentUtility.state,
-                ...newState
-            };
-            this.saveUtilityState(utilityId, this.state.currentUtility.state);
+            Object.assign(this.state.currentUtility.state, newState);
+            const currentState = this.state.currentUtility.state;
+            this.saveUtilityState(utilityId, currentState);
 
             const shouldRerender = options.rerender ?? this.shouldRerenderOnStateChange(newState);
             if (shouldRerender) {
@@ -401,7 +398,7 @@ export const App = {
                     contentContainer,
                     utilityModule,
                     utility,
-                    this.state.currentUtility.state,
+                    currentState,
                     setState
                 );
             }
@@ -660,12 +657,7 @@ export const App = {
         }
 
         try {
-            if (typeof utilityModule.render === 'function') {
-                utilityModule.render(container, state, setState);
-                return;
-            }
-
-            this.renderGenericUtility(container, utilityModule, utility, state, setState);
+            this.renderIntentUtility(container, utility, state, setState);
         } catch (error) {
             console.error(`Render failed for ${utility.id}:`, error);
             container.innerHTML = `
@@ -675,6 +667,166 @@ export const App = {
                 </div>
             `;
         }
+    },
+
+    renderIntentUtility(container, utility, state, setState) {
+        const intent = analyzeUtilityIntent(utility);
+        const inputText = typeof state.intentInput === 'string' ? state.intentInput : '';
+        const result = state.intentResult || null;
+        const history = Array.isArray(state.intentHistory) ? state.intentHistory : [];
+        const executionError = typeof state.executionError === 'string' ? state.executionError : '';
+
+        container.innerHTML = `
+            <div class="utility-workspace">
+                <div class="card" style="margin-bottom: 20px;">
+                    <h3>${this.escapeHtml(intent.actionLabel)} Engine</h3>
+                    <p>${this.escapeHtml(intent.intent)}</p>
+                    <div class="utility-tags" style="margin: 12px 0;">
+                        <span class="badge">${this.escapeHtml(intent.domain)}</span>
+                        <span class="badge">${this.escapeHtml(intent.archetype)}</span>
+                    </div>
+                    <h4 style="margin: 12px 0 8px 0;">Execution Plan</h4>
+                    <ul style="margin: 0 0 12px 18px;">
+                        ${intent.workflow.map(step => `<li>${this.escapeHtml(step)}</li>`).join('')}
+                    </ul>
+                    <div class="form-group">
+                        <label class="label" for="intent-input">Input</label>
+                        <textarea
+                            class="textarea"
+                            id="intent-input"
+                            placeholder="${this.escapeHtml(intent.inputHint)}"
+                            style="min-height: 140px;"
+                        >${this.escapeHtml(inputText)}</textarea>
+                    </div>
+                    <div class="utility-controls" style="margin-top: 12px;">
+                        <button class="btn btn-primary" id="intent-run-btn">Run</button>
+                        <button class="btn btn-secondary" id="intent-clear-btn">Clear</button>
+                    </div>
+                </div>
+
+                ${executionError ? `
+                    <div class="card" style="margin-top: 20px;">
+                        <h3>Error</h3>
+                        <p style="color: var(--color-danger);">${this.escapeHtml(executionError)}</p>
+                    </div>
+                ` : ''}
+
+                ${result ? this.renderIntentResult(result) : ''}
+
+                ${history.length > 0 ? `
+                    <div class="card" style="margin-top: 20px;">
+                        <h3>Run History</h3>
+                        <div style="max-height: 220px; overflow-y: auto;">
+                            ${history.slice(-10).reverse().map(entry => `
+                                <div style="padding: 10px; border-bottom: 1px solid var(--color-neutral-200);">
+                                    <small>${new Date(entry.timestamp).toLocaleString()}</small>
+                                    <div style="margin-top: 4px;">${this.escapeHtml(entry.summary)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        const inputField = container.querySelector('#intent-input');
+        const runButton = container.querySelector('#intent-run-btn');
+        const clearButton = container.querySelector('#intent-clear-btn');
+
+        if (inputField) {
+            inputField.addEventListener('input', (event) => {
+                setState({ intentInput: event.target.value }, { rerender: false });
+            });
+        }
+
+        if (clearButton) {
+            clearButton.addEventListener('click', () => {
+                setState(
+                    {
+                        intentInput: '',
+                        intentResult: null
+                    },
+                    { rerender: true }
+                );
+            });
+        }
+
+        if (runButton) {
+            runButton.addEventListener('click', () => {
+                const nextInput = inputField ? inputField.value : inputText;
+
+                try {
+                    const intentResult = runUtilityIntent(utility, nextInput);
+                    const currentHistory = Array.isArray(state.intentHistory) ? state.intentHistory : [];
+                    const nextHistory = [
+                        ...currentHistory.slice(-24),
+                        {
+                            summary: intentResult.summary,
+                            timestamp: Date.now()
+                        }
+                    ];
+
+                    setState(
+                        {
+                            intentInput: nextInput,
+                            intentResult,
+                            intentHistory: nextHistory,
+                            executionError: null
+                        },
+                        { rerender: true }
+                    );
+                } catch (error) {
+                    setState(
+                        {
+                            executionError: error.message || 'Failed to process utility input'
+                        },
+                        { rerender: true }
+                    );
+                }
+            });
+        }
+    },
+
+    renderIntentResult(result) {
+        const metrics = Array.isArray(result.metrics) ? result.metrics : [];
+        const details = Array.isArray(result.details) ? result.details : [];
+        const recommendations = Array.isArray(result.recommendations) ? result.recommendations : [];
+
+        return `
+            <div class="card" style="margin-top: 20px;">
+                <h3>Result</h3>
+                <p>${this.escapeHtml(result.summary || 'No summary available.')}</p>
+                ${metrics.length > 0 ? `
+                    <div class="utility-tags" style="margin: 12px 0;">
+                        ${metrics.map(metric => `
+                            <span class="badge">
+                                ${this.escapeHtml(metric.label || 'Metric')}: ${this.escapeHtml(metric.value || '')}
+                            </span>
+                        `).join('')}
+                    </div>
+                ` : ''}
+                ${this.renderIntentList('Details', details)}
+                ${this.renderIntentList('Recommendations', recommendations)}
+            </div>
+        `;
+    },
+
+    renderIntentList(title, items) {
+        if (!Array.isArray(items) || items.length === 0) {
+            return '';
+        }
+
+        return `
+            <div style="margin-top: 12px;">
+                <h4 style="margin-bottom: 6px;">${this.escapeHtml(title)}</h4>
+                <ul style="margin: 0 0 0 18px;">
+                    ${items.map(item => {
+                        const value = typeof item === 'string' ? item : JSON.stringify(item);
+                        return `<li>${this.escapeHtml(value)}</li>`;
+                    }).join('')}
+                </ul>
+            </div>
+        `;
     },
 
     renderGenericUtility(container, utilityModule, utility, state, setState) {
@@ -860,6 +1012,8 @@ export const App = {
     },
 
     getUtilityHelpHtml(utilityModule, utility) {
+        const intent = analyzeUtilityIntent(utility);
+
         try {
             if (typeof utilityModule.help === 'function') {
                 return utilityModule.help();
@@ -893,9 +1047,9 @@ export const App = {
 
         return `
             <ul>
-                <li>This utility helps you ${this.escapeHtml(utility.description.toLowerCase())}</li>
-                <li>All processing happens in your browser</li>
-                <li>Your data stays on your device</li>
+                <li>${this.escapeHtml(intent.intent)}</li>
+                ${intent.workflow.slice(0, 3).map(step => `<li>${this.escapeHtml(step)}</li>`).join('')}
+                <li>${this.escapeHtml(intent.inputHint)}</li>
             </ul>
         `;
     },
